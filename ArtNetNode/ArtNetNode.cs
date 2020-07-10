@@ -7,131 +7,262 @@ using System.Net.Sockets;
 using System.Threading;
 
 namespace AydenIO.ArtNet.Node {
-    public class ArtNetNode {
+    public class ArtNetNode : IDisposable {
         public const ushort ARTNET_PORT = 0x1936;
+        public const ushort VERSION = 0x0001;
+
+        public const int CHANNELS_PER_UNIVERSE = 512;
 
         private readonly byte[] ARTNET_HEADER = (new[] { 'A', 'r', 't', '-', 'N', 'e', 't', '\0' }).OfType<byte>().ToArray();
 
-        public const ushort OPCODE_OpPoll = 0x2000;
-        public const ushort OPCODE_OpPollReply = 0x2100;
-        public const ushort OPCODE_OpOutput = 0x5000;
+        private UdpClient socket;
+        private Thread socketThread;
 
-        private UdpClient Socket;
-        private Thread SocketThread;
-        private bool SocketLoopRunning;
-
+        /// <summary>
+        /// Returns the collection of universes this node handles
+        /// </summary>
         public ArtNetUniverseCollection Universes { get; private set; }
 
-        public string Host { get; private set; }
-        public ushort Port { get; private set; }
+        /// <summary>
+        /// Returns an <c>ArtNetUniverse</c> given a DMX universe index
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public ArtNetUniverse this[int index] => this.Universes[index];
 
-        public ArtNetNode(string host = null, ushort port = ARTNET_PORT) {
-            this.Universes = new ArtNetUniverseCollection(this);
+        /// <summary>
+        /// The <c>IPEndPoint</c> the node is listening on
+        /// </summary>
+        public IPEndPoint LocalEndPoint { get; private set; }
 
-            this.Host = host;
-            this.Port = port;
+        private object syncRoot;
+
+        /// <summary>
+        /// Create an <c>ArtNetNode</c>
+        /// </summary>
+        /// <param name="endPoint">The <c>IPEndPoint</c> for the node to listen on</param>
+        /// <param name="allowedUniverses">An <c>IEnumerable&lt;int&gt;</c> of universes to listen for</param>
+        public ArtNetNode(IPEndPoint endPoint, IEnumerable<int> allowedUniverses = null) {
+            this.Initialize(endPoint, allowedUniverses);
         }
 
-        public void Start() {
-            if (this.SocketThread != null) {
-                return;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="host">The <c>IPAddress</c> for the node to listen on</param>
+        /// <param name="port">The port for the node to listen on</param>
+        /// <param name="allowedUniverses">An <c>IEnumerable&lt;int&gt;</c> of universes to listen for</param>
+        public ArtNetNode(IPAddress host, ushort port = ARTNET_PORT, IEnumerable<int> allowedUniverses = null) {
+            this.Initialize(new IPEndPoint(host, port), allowedUniverses);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="host">The IP address string for the node to listen on</param>
+        /// <param name="port">The port for the node to listen on</param>
+        /// <param name="allowedUniverses">An <c>IEnumerable&lt;int&gt;</c> of universes to listen for</param>
+        public ArtNetNode(string host = null, ushort port = ARTNET_PORT, IEnumerable<int> allowedUniverses = null) {
+            // Handle null host
+            IPAddress address = host == null ? IPAddress.Any : IPAddress.Parse(host);
+
+            this.Initialize(new IPEndPoint(address, port), allowedUniverses);
+        }
+
+        // Prevent double initialization
+        private bool initialized = false;
+
+        /// <summary>
+        /// Initializes the object
+        /// </summary>
+        /// <param name="endPoint">The <c>IPEndPoint</c> for the node to listen on</param>
+        /// <param name="allowedUniverses">An <c>IEnumerable&lt;int&gt;</c> of universes to listen for</param>
+        private void Initialize(IPEndPoint endPoint, IEnumerable<int> allowedUniverses = null) {
+            if (!this.initialized) {
+                // Prevent double initialization
+                this.initialized = true;
+
+                // Create universes
+                this.Universes = new ArtNetUniverseCollection(this, allowedUniverses);
+
+                // Set up properties and fields
+                this.LocalEndPoint = endPoint;
+
+                this.syncRoot = new object();
             }
-
-            this.SocketLoopRunning = true;
-
-            this.SocketThread = new Thread(new ThreadStart(this.SocketLoop));
-
-            this.SocketThread.IsBackground = true;
-
-            this.SocketThread.Start();
         }
 
-        public void Stop() {
-            if (this.SocketThread != null) {
-                this.SocketLoopRunning = false;
+        /// <summary>
+        /// Begin listening for ArtNet packets
+        /// </summary>
+        /// <returns>Whether the call started the listener thread</returns>
+        public bool Start() {
+            // Prevent double start
+            lock (this.syncRoot) {
+                // Check to make sure no thread is already running
+                if (this.socketThread != null) {
+                    return false;
+                }
 
-                this.SocketThread.Join();
+                // Create thread
+                this.socketThread = new Thread(new ThreadStart(this.SocketLoop)) {
+                    IsBackground = true,
+                    Name = nameof(this.socketThread)
+                };
 
-                this.SocketThread = null;
+                // Start thread
+                this.socketThread.Start();
+
+                return true;
             }
         }
 
-        private async void SocketLoop() {
-            IPEndPoint address = new IPEndPoint(this.Host == null ? IPAddress.Any : IPAddress.Parse(this.Host), this.Port);
+        /// <summary>
+        /// Stop listening for ArtNet packets
+        /// </summary>
+        /// <returns>Whether the call stopped the listener thread</returns>
+        public bool Stop() {
+            // Prevent double stop
+            lock (this.syncRoot) {
+                // Check to make sure there is a thread running
+                if (this.socketThread == null) {
+                    return false;
+                }
 
-            this.Socket = new UdpClient(address);
+                // Close socket
+                this.socket.Close();
+                this.socket.Dispose();
+                this.socket = null;
 
-            this.Socket.EnableBroadcast = true;
+                // Wait for thread to finish
+                this.socketThread.Join();
 
-            //this.Socket.ExclusiveAddressUse = false;
-            //this.Socket.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-            //this.Socket.Client.Bind(address);
+                this.socketThread = null;
 
-            while (this.SocketLoopRunning) {
-                Console.Write(".");
-                UdpReceiveResult result = await this.Socket.ReceiveAsync();
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// The listener thread function
+        /// </summary>
+        private void SocketLoop() {
+            // Set up socket
+            this.socket = new UdpClient {
+                EnableBroadcast = true,
+                ExclusiveAddressUse = false
+            };
+
+            // Allow multiple nodes to listen on the same port
+            this.socket.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+
+            // Bind to the port
+            this.socket.Client.Bind(this.LocalEndPoint);
+
+            // Forever
+            while (true) {
+                // Receive UDP datagram
+                IPEndPoint endPoint = null;
+                byte[] buffer;
+
+                try {
+                    buffer = this.socket.Receive(ref endPoint);
+                } catch (ObjectDisposedException) {
+                    break;
+                } catch (SocketException e) when (e.SocketErrorCode == SocketError.TimedOut) {
+                    continue;
+                } catch (SocketException e) when (e.SocketErrorCode == SocketError.Interrupted) {
+                    break;
+                }
 
                 // Determine if packet is art-net packet
                 // Art-Net packets have a 12-byte header
-                if (result.Buffer.Length < 12) {
+                if (buffer.Length < 12) {
                     continue;
                 }
 
                 // packets start with Art-Net\0
-                if (!result.Buffer.Take(8).SequenceEqual(ARTNET_HEADER)) {
+                if (!buffer.Take(ARTNET_HEADER.Length).SequenceEqual(ARTNET_HEADER)) {
                     continue;
                 }
 
-                ushort opcode = BitConverter.ToUInt16(result.Buffer, 8);
+                // Get opcode
+                ushort opcodeRaw = BitConverter.ToUInt16(buffer, 8);
 
                 if (!BitConverter.IsLittleEndian) {
                     // Opcode is little-endian
-                    opcode = (ushort)((opcode >> 8) | ((opcode & 0xff) << 8));
+                    opcodeRaw = (ushort)((opcodeRaw >> 8) | ((opcodeRaw & 0xff) << 8));
                 }
 
-                ushort version = BitConverter.ToUInt16(result.Buffer, 10);
+                ArtNetOpCode opcode = (ArtNetOpCode)opcodeRaw;
+
+                // Get version
+                ushort version = BitConverter.ToUInt16(buffer, 10);
 
                 if (BitConverter.IsLittleEndian) {
                     // Version is big-endian
-                    version = (ushort)((version >> 8) | ((version & 0xff) << 8));
+                    version = (ushort)((version >> 8) | (version << 8));
                 }
 
+                // Determine what to do with remaining data
                 switch (opcode) {
-                    case OPCODE_OpPoll:
-                        byte talkToMe = result.Buffer[12];
-
-                        // TODO: Handle talktome
-
-                        byte priority = result.Buffer[13];
-
-                        break;
-                    case OPCODE_OpOutput: // Handle DMX packets
-                        ushort universe = BitConverter.ToUInt16(result.Buffer, 14);
+                    case ArtNetOpCode.OpOutput: // Handle DMX packets
+                        ushort universe = BitConverter.ToUInt16(buffer, 14);
 
                         if (!BitConverter.IsLittleEndian) {
                             // Universe is little-endian
                             universe = (ushort)((universe >> 8) | ((universe & 0xff) << 8));
                         }
 
-                        ushort length = BitConverter.ToUInt16(result.Buffer, 16);
+                        ushort length = BitConverter.ToUInt16(buffer, 16);
 
                         if (BitConverter.IsLittleEndian) {
                             // Length is big-endian
                             length = (ushort)((length >> 8) | ((length & 0xff) << 8));
                         }
 
-                        this.Universes[universe].UpdateFromBuffer(result.Buffer, 18, length);
+                        this.Universes[universe].UpdateFromBuffer(buffer, 18, length);
 
                         break;
                     default:
-                        Console.WriteLine("Unknown opcode: {0}", opcode);
+                        // TODO: ???
                         break;
                 }
             }
-
-            this.Socket.Close();
-
-            this.Socket = null;
         }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing) {
+            if (!disposedValue) {
+                if (disposing) {
+                    // TODO: dispose managed state (managed objects).
+                    ((IDisposable)this.socket)?.Dispose();
+                    this.socket = null;
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+
+                disposedValue = true;
+            }
+        }
+
+        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
+        // ~ArtNetNode()
+        // {
+        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+        //   Dispose(false);
+        // }
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose() {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+            // TODO: uncomment the following line if the finalizer is overridden above.
+            // GC.SuppressFinalize(this);
+        }
+        #endregion
     }
 }

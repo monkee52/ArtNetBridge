@@ -4,32 +4,49 @@ using System.Text;
 
 namespace AydenIO.ArtNet.Node {
     public class ArtNetChannel {
-        protected ArtNetUniverse Universe { get; private set; }
-        public ushort Channel { get; private set; }
+        /// <value>A reference to the associated <c>ArtNetUniverse</c> for this channel</value>
+        public ArtNetUniverse Universe { get; private set; }
 
-        private byte _Value;
+        /// <value>The channel index</value>
+        public ushort ChannelId { get; private set; }
 
-        public byte Value {
-            get {
-                return this._Value;
-            }
+        private byte? underlyingValue = null;
 
-            internal set {
-                if (value != this._Value) {
-                    byte oldValue = this._Value;
+        /// <value>Returns the current DMX value of the channel</value>
+        public byte Value => this.underlyingValue ?? 0;
 
-                    this._Value = value;
+        /// <summary>
+        /// Updates the DMX value of the channel, calling event handlers as needed
+        /// </summary>
+        /// <param name="newValue">The new DMX value</param>
+        /// <param name="sequenceCounter">A sequence counter to be used to prevent a handler being called multiple times if it's watching the same channels.</param>
+        internal void SetValue(byte newValue, int sequenceCounter) {
+            // Ensure value has changed
+            if (this.underlyingValue != newValue) {
+                // Get old value
+                byte oldValue = this.Value;
 
-                    this.ValueChanged?.Invoke(this, new ArtNetValueChangedEventArgs(oldValue, this._Value));
-                }
+                // Update internal state
+                this.underlyingValue = newValue;
+
+                // Trigger event handlers
+                this.ValueChanged?.Invoke(this, new ArtNetValueChangedEventArgs(oldValue, newValue, sequenceCounter));
             }
         }
 
+        /// <summary>
+        /// A handler that is called whenever the DMX value has changed
+        /// </summary>
         public event EventHandler<ArtNetValueChangedEventArgs> ValueChanged;
 
+        /// <summary>
+        /// Creates an <c>ArtNetChannel</c>
+        /// </summary>
+        /// <param name="universe">The <c>ArtNetUniverse</c> the channel belongs to</param>
+        /// <param name="channel">The channel index</param>
         protected internal ArtNetChannel(ArtNetUniverse universe, ushort channel) {
             this.Universe = universe;
-            this.Channel = channel;
+            this.ChannelId = channel;
         }
     }
 }
