@@ -65,6 +65,11 @@ namespace AydenIO.ArtNet.Node {
 
             // Track how many times this function has been called
             this.updateSequenceNumber++;
+
+            // Call event handlers
+            this.UniverseUpdated?.Invoke(this, new EventArgs());
         }
+
+        public event EventHandler UniverseUpdated;
     }
 }

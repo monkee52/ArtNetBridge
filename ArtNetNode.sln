@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.30011.22
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArtNetNode", "ArtNetNode\ArtNetNode.csproj", "{2ED22E52-0DF3-47D3-A8E4-2AB4CBCCD981}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example", "Example\Example.csproj", "{706E3E49-FE05-4AB8-A2AE-E3C474DA91C2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{2ED22E52-0DF3-47D3-A8E4-2AB4CBCCD981}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2ED22E52-0DF3-47D3-A8E4-2AB4CBCCD981}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2ED22E52-0DF3-47D3-A8E4-2AB4CBCCD981}.Release|Any CPU.Build.0 = Release|Any CPU
+		{706E3E49-FE05-4AB8-A2AE-E3C474DA91C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{706E3E49-FE05-4AB8-A2AE-E3C474DA91C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{706E3E49-FE05-4AB8-A2AE-E3C474DA91C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{706E3E49-FE05-4AB8-A2AE-E3C474DA91C2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
