@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>AydenIO.ArtNet.Node</AssemblyName>
+    <RootNamespace>AydenIO.ArtNet.Node</RootNamespace>
   </PropertyGroup>
 
 </Project>
