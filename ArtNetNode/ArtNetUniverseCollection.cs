@@ -14,10 +14,10 @@ namespace AydenIO.ArtNet.Node {
         /// </summary>
         public ArtNetNode Node { get; private set; }
 
-        private IDictionary<int, ArtNetUniverse> universes;
-        private IEnumerable<int> allowedUniverses;
+        private readonly IDictionary<int, ArtNetUniverse> universes;
+        private readonly IEnumerable<int> allowedUniverses;
 
-        private object syncRoot;
+        private readonly object syncRoot;
 
         /// <summary>
         /// Create a collection of <c>ArtNetUniverse</c>s
@@ -73,12 +73,15 @@ namespace AydenIO.ArtNet.Node {
             }
         }
 
+        /// <inheritdoc />
         public int Count => this.universes.Count;
 
+        /// <inheritdoc />
         public IEnumerator<ArtNetUniverse> GetEnumerator() {
             return this.universes.Values.GetEnumerator();
         }
 
+        /// <inheritdoc />
         IEnumerator IEnumerable.GetEnumerator() {
             return ((IEnumerable)this.universes.Values).GetEnumerator();
         }

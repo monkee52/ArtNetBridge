@@ -7,10 +7,23 @@ using System.Net.Sockets;
 using System.Threading;
 
 namespace AydenIO.ArtNet.Node {
+    /// <summary>
+    /// An ArtNet node that listens for ArtNet packets
+    /// </summary>
     public class ArtNetNode : IDisposable {
+        /// <summary>
+        /// The default port that ArtNet packets are received on
+        /// </summary>
         public const ushort ARTNET_PORT = 0x1936;
+
+        /// <summary>
+        /// The current version of the protocol
+        /// </summary>
         public const ushort VERSION = 0x0001;
 
+        /// <summary>
+        /// The maximum number of channels in a DMX universe
+        /// </summary>
         public const int CHANNELS_PER_UNIVERSE = 512;
 
         private readonly byte[] ARTNET_HEADER = (new[] { 'A', 'r', 't', '-', 'N', 'e', 't', '\0' }).OfType<byte>().ToArray();
@@ -234,6 +247,7 @@ namespace AydenIO.ArtNet.Node {
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
 
+        /// <inheritdoc />
         protected virtual void Dispose(bool disposing) {
             if (!disposedValue) {
                 if (disposing) {
@@ -257,6 +271,7 @@ namespace AydenIO.ArtNet.Node {
         // }
 
         // This code added to correctly implement the disposable pattern.
+        /// <inheritdoc />
         public void Dispose() {
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
             Dispose(true);

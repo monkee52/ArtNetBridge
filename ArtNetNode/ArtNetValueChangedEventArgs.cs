@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace AydenIO.ArtNet.Node {
+    /// <summary>
+    /// Used in event handlers to notify listeners of a change in DMX value
+    /// </summary>
     public class ArtNetValueChangedEventArgs : EventArgs {
         /// <value>Gets the new/current value of the DMX channel</value>
         public byte Value { get; private set; }

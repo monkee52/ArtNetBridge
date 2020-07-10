@@ -17,7 +17,7 @@ namespace AydenIO.ArtNet.Node {
         /// </summary>
         public int UniverseId { get; private set; }
 
-        private ArtNetChannel[] channels;
+        private readonly ArtNetChannel[] channels;
 
         /// <summary>
         /// All the channels in the universe

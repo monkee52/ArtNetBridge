@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace AydenIO.ArtNet.Node {
+    /// <summary>
+    /// Represents a DMX channel in a universe
+    /// </summary>
     public class ArtNetChannel {
         /// <value>A reference to the associated <c>ArtNetUniverse</c> for this channel</value>
         public ArtNetUniverse Universe { get; private set; }

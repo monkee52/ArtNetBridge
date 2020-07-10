@@ -1,0 +1,240 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>AydenIO.ArtNet.Node</name>
+    </assembly>
+    <members>
+        <member name="T:AydenIO.ArtNet.Node.ArtNetChannel">
+            <summary>
+            Represents a DMX channel in a universe
+            </summary>
+        </member>
+        <member name="P:AydenIO.ArtNet.Node.ArtNetChannel.Universe">
+            <value>A reference to the associated <c>ArtNetUniverse</c> for this channel</value>
+        </member>
+        <member name="P:AydenIO.ArtNet.Node.ArtNetChannel.ChannelId">
+            <value>The channel index</value>
+        </member>
+        <member name="P:AydenIO.ArtNet.Node.ArtNetChannel.Value">
+            <value>Returns the current DMX value of the channel</value>
+        </member>
+        <member name="M:AydenIO.ArtNet.Node.ArtNetChannel.SetValue(System.Byte,System.Int32)">
+            <summary>
+            Updates the DMX value of the channel, calling event handlers as needed
+            </summary>
+            <param name="newValue">The new DMX value</param>
+            <param name="sequenceCounter">A sequence counter to be used to prevent a handler being called multiple times if it's watching the same channels.</param>
+        </member>
+        <member name="E:AydenIO.ArtNet.Node.ArtNetChannel.ValueChanged">
+            <summary>
+            A handler that is called whenever the DMX value has changed
+            </summary>
+        </member>
+        <member name="M:AydenIO.ArtNet.Node.ArtNetChannel.#ctor(AydenIO.ArtNet.Node.ArtNetUniverse,System.UInt16)">
+            <summary>
+            Creates an <c>ArtNetChannel</c>
+            </summary>
+            <param name="universe">The <c>ArtNetUniverse</c> the channel belongs to</param>
+            <param name="channel">The channel index</param>
+        </member>
+        <member name="T:AydenIO.ArtNet.Node.ArtNetNode">
+            <summary>
+            An ArtNet node that listens for ArtNet packets
+            </summary>
+        </member>
+        <member name="F:AydenIO.ArtNet.Node.ArtNetNode.ARTNET_PORT">
+            <summary>
+            The default port that ArtNet packets are received on
+            </summary>
+        </member>
+        <member name="F:AydenIO.ArtNet.Node.ArtNetNode.VERSION">
+            <summary>
+            The current version of the protocol
+            </summary>
+        </member>
+        <member name="F:AydenIO.ArtNet.Node.ArtNetNode.CHANNELS_PER_UNIVERSE">
+            <summary>
+            The maximum number of channels in a DMX universe
+            </summary>
+        </member>
+        <member name="P:AydenIO.ArtNet.Node.ArtNetNode.Universes">
+            <summary>
+            Returns the collection of universes this node handles
+            </summary>
+        </member>
+        <member name="P:AydenIO.ArtNet.Node.ArtNetNode.Item(System.Int32)">
+            <summary>
+            Returns an <c>ArtNetUniverse</c> given a DMX universe index
+            </summary>
+            <param name="index"></param>
+            <returns></returns>
+        </member>
+        <member name="P:AydenIO.ArtNet.Node.ArtNetNode.LocalEndPoint">
+            <summary>
+            The <c>IPEndPoint</c> the node is listening on
+            </summary>
+        </member>
+        <member name="M:AydenIO.ArtNet.Node.ArtNetNode.#ctor(System.Net.IPEndPoint,System.Collections.Generic.IEnumerable{System.Int32})">
+            <summary>
+            Create an <c>ArtNetNode</c>
+            </summary>
+            <param name="endPoint">The <c>IPEndPoint</c> for the node to listen on</param>
+            <param name="allowedUniverses">An <c>IEnumerable&lt;int&gt;</c> of universes to listen for</param>
+        </member>
+        <member name="M:AydenIO.ArtNet.Node.ArtNetNode.#ctor(System.Net.IPAddress,System.UInt16,System.Collections.Generic.IEnumerable{System.Int32})">
+            <summary>
+            
+            </summary>
+            <param name="host">The <c>IPAddress</c> for the node to listen on</param>
+            <param name="port">The port for the node to listen on</param>
+            <param name="allowedUniverses">An <c>IEnumerable&lt;int&gt;</c> of universes to listen for</param>
+        </member>
+        <member name="M:AydenIO.ArtNet.Node.ArtNetNode.#ctor(System.String,System.UInt16,System.Collections.Generic.IEnumerable{System.Int32})">
+            <summary>
+            
+            </summary>
+            <param name="host">The IP address string for the node to listen on</param>
+            <param name="port">The port for the node to listen on</param>
+            <param name="allowedUniverses">An <c>IEnumerable&lt;int&gt;</c> of universes to listen for</param>
+        </member>
+        <member name="M:AydenIO.ArtNet.Node.ArtNetNode.Initialize(System.Net.IPEndPoint,System.Collections.Generic.IEnumerable{System.Int32})">
+            <summary>
+            Initializes the object
+            </summary>
+            <param name="endPoint">The <c>IPEndPoint</c> for the node to listen on</param>
+            <param name="allowedUniverses">An <c>IEnumerable&lt;int&gt;</c> of universes to listen for</param>
+        </member>
+        <member name="M:AydenIO.ArtNet.Node.ArtNetNode.Start">
+            <summary>
+            Begin listening for ArtNet packets
+            </summary>
+            <returns>Whether the call started the listener thread</returns>
+        </member>
+        <member name="M:AydenIO.ArtNet.Node.ArtNetNode.Stop">
+            <summary>
+            Stop listening for ArtNet packets
+            </summary>
+            <returns>Whether the call stopped the listener thread</returns>
+        </member>
+        <member name="M:AydenIO.ArtNet.Node.ArtNetNode.SocketLoop">
+            <summary>
+            The listener thread function
+            </summary>
+        </member>
+        <member name="M:AydenIO.ArtNet.Node.ArtNetNode.Dispose(System.Boolean)">
+            <inheritdoc />
+        </member>
+        <member name="M:AydenIO.ArtNet.Node.ArtNetNode.Dispose">
+            <inheritdoc />
+        </member>
+        <member name="T:AydenIO.ArtNet.Node.ArtNetOpCode">
+            <summary>
+            ArtNet packet types
+            </summary>
+        </member>
+        <member name="T:AydenIO.ArtNet.Node.ArtNetUniverse">
+            <summary>
+            Represents a DMX universe
+            </summary>
+        </member>
+        <member name="P:AydenIO.ArtNet.Node.ArtNetUniverse.Node">
+            <summary>
+            The <c>ArtNetNode</c> that this universe belongs to
+            </summary>
+        </member>
+        <member name="P:AydenIO.ArtNet.Node.ArtNetUniverse.UniverseId">
+            <summary>
+            The index of the universe
+            </summary>
+        </member>
+        <member name="P:AydenIO.ArtNet.Node.ArtNetUniverse.Channels">
+            <summary>
+            All the channels in the universe
+            </summary>
+        </member>
+        <member name="P:AydenIO.ArtNet.Node.ArtNetUniverse.Item(System.Int32)">
+            <summary>
+            Quick way to retrieve a DMX value for a channel
+            </summary>
+            <param name="channel">The channel index to retrieve</param>
+            <returns>The DMX value</returns>
+        </member>
+        <member name="M:AydenIO.ArtNet.Node.ArtNetUniverse.#ctor(AydenIO.ArtNet.Node.ArtNetNode,System.Int32)">
+            <summary>
+            Creates a DMX universe
+            </summary>
+            <param name="node">The <c>ArtNetNode</c> that the universe belongs to</param>
+            <param name="universe">The index of the universe</param>
+        </member>
+        <member name="M:AydenIO.ArtNet.Node.ArtNetUniverse.UpdateFromBuffer(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Updates all the channels in the universe given a byte array
+            </summary>
+            <param name="buffer">The byte array source</param>
+            <param name="startAt">Where in the array to start updating from</param>
+            <param name="length">How many channels to grab</param>
+        </member>
+        <member name="T:AydenIO.ArtNet.Node.ArtNetUniverseCollection">
+            <summary>
+            A collection of <c>ArtNetUniverse</c>s
+            </summary>
+        </member>
+        <member name="P:AydenIO.ArtNet.Node.ArtNetUniverseCollection.Node">
+            <summary>
+            The <c>ArtNetNode</c> that the universe collection belongs to
+            </summary>
+        </member>
+        <member name="M:AydenIO.ArtNet.Node.ArtNetUniverseCollection.#ctor(AydenIO.ArtNet.Node.ArtNetNode,System.Collections.Generic.IEnumerable{System.Int32})">
+            <summary>
+            Create a collection of <c>ArtNetUniverse</c>s
+            </summary>
+            <param name="node">The <c>ArtNetNode</c> the collection belongs to</param>
+            <param name="allowedUniverses">A list of universes that are allowed to be received</param>
+        </member>
+        <member name="M:AydenIO.ArtNet.Node.ArtNetUniverseCollection.UniverseAllowed(System.Int32)">
+            <summary>
+            Check if a given universe index is allowed
+            </summary>
+            <param name="index">The universe index</param>
+            <returns>Whether the index is allowed</returns>
+        </member>
+        <member name="P:AydenIO.ArtNet.Node.ArtNetUniverseCollection.Item(System.Int32)">
+            <summary>
+            Get a universe given its index
+            </summary>
+            <param name="index">The universe index</param>
+            <returns>The <c>ArtNetUniverse</c> for the given index</returns>
+        </member>
+        <member name="P:AydenIO.ArtNet.Node.ArtNetUniverseCollection.Count">
+            <inheritdoc />
+        </member>
+        <member name="M:AydenIO.ArtNet.Node.ArtNetUniverseCollection.GetEnumerator">
+            <inheritdoc />
+        </member>
+        <member name="M:AydenIO.ArtNet.Node.ArtNetUniverseCollection.System#Collections#IEnumerable#GetEnumerator">
+            <inheritdoc />
+        </member>
+        <member name="T:AydenIO.ArtNet.Node.ArtNetValueChangedEventArgs">
+            <summary>
+            Used in event handlers to notify listeners of a change in DMX value
+            </summary>
+        </member>
+        <member name="P:AydenIO.ArtNet.Node.ArtNetValueChangedEventArgs.Value">
+            <value>Gets the new/current value of the DMX channel</value>
+        </member>
+        <member name="P:AydenIO.ArtNet.Node.ArtNetValueChangedEventArgs.OldValue">
+            <value>Gets the previous value of the DMX channel</value>
+        </member>
+        <member name="P:AydenIO.ArtNet.Node.ArtNetValueChangedEventArgs.UpdateSequenceNumber">
+            <value>Used to track which update the change belongs to</value>
+        </member>
+        <member name="M:AydenIO.ArtNet.Node.ArtNetValueChangedEventArgs.#ctor(System.Byte,System.Byte,System.Int32)">
+            <summary>
+            Creates an event arguments object for DMX value changed event handlers
+            </summary>
+            <param name="oldValue">The previous value</param>
+            <param name="value">The new/current value</param>
+            <param name="updateSequenceNumber">Which update the change belongs to</param>
+        </member>
+    </members>
+</doc>

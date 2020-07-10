@@ -6,4 +6,12 @@
     <RootNamespace>AydenIO.ArtNet.Node</RootNamespace>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile>F:\personal-projects\Migration\ArtNetNode\ArtNetNode\AydenIO.ArtNet.Node.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>F:\personal-projects\Migration\ArtNetNode\ArtNetNode\AydenIO.ArtNet.Node.xml</DocumentationFile>
+  </PropertyGroup>
+
 </Project>
